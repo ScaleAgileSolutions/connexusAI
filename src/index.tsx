@@ -8,7 +8,7 @@ import { getWidgetConfig, initializeWidgetConfig } from './constants/config';
 // Create and export a global function to render the widget for embedding purposes
 export const initializeChatWidget = async () => {
     try {
-        await initializeWidgetConfig();
+   
         console.log('Initializing chat widget...');
         const div = document.createElement('div');
         div.id = getWidgetConfig().divId;
@@ -30,7 +30,15 @@ console.log('Window loaded, initializing widget... First step');
 if (typeof window !== 'undefined') {
     window.onload = async () => {
         console.log('Window loaded, initializing widget... Second step');
-        await initializeChatWidget();
+        try{
+            await initializeWidgetConfig();
+            let data = getWidgetConfig().domains.includes(window.location.origin)
+            if(data){
+                await initializeChatWidget();
+            }
+        }catch(err){
+            console.log('Please check your widget configuration')
+        }
     };
 } else {
     console.log('Not Initialized');

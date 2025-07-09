@@ -1,7 +1,7 @@
 import { allowedOrigins } from './allowedOrigins';
 const scriptTag = document.currentScript as HTMLScriptElement | null;
 
-let tk = scriptTag?.getAttribute("tk")
+let tk = scriptTag?.getAttribute("tk") || 'ZgBcMGBKbD9vL8Hfiq2Xu4SRuPZGS_AaMgETWGBa4cP36L6Gj5XHqxNCdjljoWU7ZzvTnNPav5GZ5r_wLWUmKXc9PQ..'
 // Custom Base64 obfuscator
 
 // Function to fetch widget configuration
@@ -17,8 +17,9 @@ const fetchWidgetConfig = async () => {
     if (!response.ok) {
       throw new Error('Failed to fetch widget configuration');
     }
-
+    console.log(response,'response.data')
     return await response.json();
+  
   } catch (error) {
     console.error('Error fetching widget configuration:', error);
     // Return default configuration if fetch fails

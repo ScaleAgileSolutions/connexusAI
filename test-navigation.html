@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Navigation Warning Test - Non-SPA Site</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .call-status {
+            background: #f0f0f0;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .active {
+            background: #d4edda;
+            color: #155724;
+        }
+        .inactive {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .danger {
+            background: #dc3545;
+        }
+        .danger:hover {
+            background: #c82333;
+        }
+        a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <h1>Navigation Warning Test - Non-SPA Site</h1>
+    
+    <div class="test-section">
+        <h2>Call Status</h2>
+        <div id="callStatus" class="call-status inactive">
+            Call Status: Inactive
+        </div>
+        <button onclick="startCall()">Start Call</button>
+        <button onclick="endCall()" class="danger">End Call</button>
+    </div>
+
+    <div class="test-section">
+        <h2>Navigation Tests</h2>
+        <p>Try clicking these links when a call is active to test the navigation warning:</p>
+        
+        <h3>Internal Links (Same Domain)</h3>
+        <a href="https://example.com/page1">Example.com Page 1</a><br>
+        <a href="https://example.com/page2">Example.com Page 2</a><br>
+        <a href="https://example.com/contact">Example.com Contact</a>
+        
+        <h3>External Links (Different Domain)</h3>
+        <a href="https://google.com">Google</a><br>
+        <a href="https://github.com">GitHub</a><br>
+        <a href="https://stackoverflow.com">Stack Overflow</a>
+        
+        <h3>Form Navigation</h3>
+        <form action="https://example.com/submit" method="GET">
+            <input type="text" name="search" placeholder="Search term">
+            <button type="submit">Submit Form</button>
+        </form>
+    </div>
+
+    <div class="test-section">
+        <h2>Test Instructions</h2>
+        <ol>
+            <li>Click "Start Call" to simulate an active call</li>
+            <li>Try clicking any of the links above</li>
+            <li>You should see a warning modal asking if you want to open in a new tab</li>
+            <li>Test the "Open in New Tab" functionality</li>
+            <li>Test the "Leave Page (End Call)" functionality</li>
+            <li>Test the "Cancel" functionality</li>
+        </ol>
+    </div>
+
+    <script>
+        // Simulate call state management
+        let isCallActive = false;
+
+        function startCall() {
+            isCallActive = true;
+            updateCallStatus();
+            // Simulate the navigation warning service
+            if (window.navigationWarningService) {
+                window.navigationWarningService.setCallActive(true);
+            }
+        }
+
+        function endCall() {
+            isCallActive = false;
+            updateCallStatus();
+            // Simulate the navigation warning service
+            if (window.navigationWarningService) {
+                window.navigationWarningService.setCallActive(false);
+            }
+        }
+
+        function updateCallStatus() {
+            const statusElement = document.getElementById('callStatus');
+            if (isCallActive) {
+                statusElement.textContent = 'Call Status: Active';
+                statusElement.className = 'call-status active';
+            } else {
+                statusElement.textContent = 'Call Status: Inactive';
+                statusElement.className = 'call-status inactive';
+            }
+        }
+
+        // Initialize status
+        updateCallStatus();
+    </script>
+
+    <!-- Include the chat widget script -->
+    <script src="dist/bundle.js"></script>
+</body>
+</html> 

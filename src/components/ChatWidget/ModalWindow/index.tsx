@@ -7,6 +7,7 @@ import { getWidgetConfig } from "../../../constants/config";
 import { styles } from "../../styles";
 import { CallTrackingData } from "../../../types/tracking";
 import { callTrackingService } from '../../../services/callTracking';
+import { navigationWarningService } from '../../../services/navigationWarning';
 
 // State management for call control
 
@@ -22,25 +23,25 @@ interface ModalWindowProps {
 
 function ModalWindow(props: ModalWindowProps) {
   // State management for audio and call status
-  const [micStream, setMicStream] = useState<MediaStream | null>(null);
-  const [audioMotion, setAudioMotion] = useState<AudioMotionAnalyzer | null>(null);
+  const [micStream, setMicStream] = useState(null);
+  const [audioMotion, setAudioMotion] = useState(null);
   const [isCalling, setIsCalling] = useState(false);
-  const [isTransferActive, setTransferActive] = useState<boolean>(false);
-  const [chatData, setChatData] = useState<{ role: string; content: string }[]>([]);
+  const [isTransferActive, setTransferActive] = useState(false);
+  const [chatData, setChatData] = useState([]);
   const widgetConfig = getWidgetConfig();
   const [currentAgentName, setCurrentAgentName] = useState(widgetConfig.agentName);
   const [currentAgentId, setCurrentAgentId] = useState(widgetConfig.agentId);
   const [hasStartedInitialCall, setHasStartedInitialCall] = useState(false);
-  const [canMakeCall, setCanMakeCall] = useState<boolean>(true);
-  const [callCount, setCallCount] = useState<number>(0);
+  const [canMakeCall, setCanMakeCall] = useState(true);
+  const [callCount, setCallCount] = useState(0);
   const [startingCall, setstartingCall] = useState(false);
-  const [callLimitError, setCallLimitError] = useState<string | null>(null);
+  const [callLimitError, setCallLimitError] = useState(null);
   // Refs for maintaining state between renders
-  const agentLastQuestion = useRef<string>("");
-  const chatContainerRef = useRef<HTMLDivElement>(null);
-  const [micAccess, setMicAccess] = useState<null | string>(null);
+  const agentLastQuestion = useRef("");
+  const chatContainerRef = useRef(null);
+  const [micAccess, setMicAccess] = useState(null);
   const transferTriggeredRef = useRef(false);
-  const holdMusicRef = useRef<HTMLAudioElement | null>(null);
+  const holdMusicRef = useRef(null);
   const handleUpdateCounter = useRef(0);
 
   // User data storage
@@ -74,7 +75,7 @@ function ModalWindow(props: ModalWindowProps) {
   const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
   // Function to register a new call with the Retell API
-  async function registerCall(agentId: string, context: any = {}): Promise<RegisterCallResponse> {
+  async function registerCall(agentId: string, context: any = {}): Promise<RegisterCallResponse | null> {
     try {
       // Generate tracking data for analytics
      console.log("registering call",...context);
@@ -105,11 +106,11 @@ function ModalWindow(props: ModalWindowProps) {
             .catch(() => 'unknown'),
           sessionId: crypto.randomUUID(),
           timestamp: new Date().toISOString(),
-          connectionType: navigator.connection?.type || 'unknown',
-          connectionSpeed: String(navigator.connection?.downlink || 'unknown'),
-          memory: String(navigator.deviceMemory || 'unknown'),
+          connectionType: (navigator as any).connection?.type || 'unknown',
+          connectionSpeed: String((navigator as any).connection?.downlink || 'unknown'),
+          memory: String((navigator as any).deviceMemory || 'unknown'),
           hardwareConcurrency: String(navigator.hardwareConcurrency || 'unknown'),
-          batteryStatus: await navigator.getBattery?.().then(battery => ({
+          batteryStatus: await (navigator as any).getBattery?.().then(battery => ({
             charging: battery.charging,
             level: battery.level,
             chargingTime: battery.chargingTime,
@@ -208,7 +209,11 @@ function ModalWindow(props: ModalWindowProps) {
       await retellWebClient.stopCall();
       playHoldMusic();
       
-      const { access_token } = await registerCall(newAgentId, context);
+      const res = await registerCall(newAgentId, context);
+      if (!res) {
+        throw new Error('Failed to register call');
+      }
+      const { access_token } = res;
       await wait(1500);
       
       await retellWebClient.startCall({
@@ -245,6 +250,8 @@ function ModalWindow(props: ModalWindowProps) {
     console.log("🧹 endCallAndReset - clearing chatData");
     // debugSetChatData([]);
     setHasStartedInitialCall(false);
+    // Update navigation warning service
+    navigationWarningService.setCallActive(false);
     props.setVisible(false);
   };
 
@@ -352,7 +359,7 @@ function ModalWindow(props: ModalWindowProps) {
       const summary = update.transcript.map(msg => `${msg.role}: ${msg.content}`).join("\n");
       await wait(3000);
       console.log("transferring to agent!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!",summary);
-      window.transferToAgent?.(widgetConfig.transferAgentName);
+      (window as any).transferToAgent?.(widgetConfig.transferAgentName);
       
       await transferCall(widgetConfig.transferAgentId, {
         handoff_reason: "agent_triggered_transfer",
@@ -388,10 +395,14 @@ function ModalWindow(props: ModalWindowProps) {
     const handleCallStarted = () => {
       console.log("📞 Call started event received");
       setIsCalling(true);
+      // Update navigation warning service
+      navigationWarningService.setCallActive(true);
     };
     const handleCallEnded = (data) => {
       console.log("📞 Call ended event received", data);
       setIsCalling(false);
+      // Update navigation warning service
+      navigationWarningService.setCallActive(false);
       props.setVisible(false);
     };
     const handleError = (err) => {
@@ -427,7 +438,9 @@ function ModalWindow(props: ModalWindowProps) {
         try {
        
           const res = await registerCall(currentAgentId);
-         
+          if (!res) {
+            throw new Error('Failed to register call');
+          }
 
           // Ensure we're not already in a call
           if (isCalling) {
@@ -474,6 +487,40 @@ function ModalWindow(props: ModalWindowProps) {
 
     setupCall();
   }, [props.visible]);
+
+  // Effect to setup navigation warning service
+  useEffect(() => {
+    // Only setup navigation warnings for non-SPA sites
+    if (!navigationWarningService.getIsSPA()) {
+      navigationWarningService.setWarningOptions({
+        onBeforeNavigate: (targetUrl: string) => {
+          // This will be called before navigation, but we handle it in the modal
+          return true;
+        },
+        onConfirmNavigate: (targetUrl: string) => {
+          // Open the target URL in a new tab
+          window.open(targetUrl, '_blank');
+        },
+        onCancelNavigate: () => {
+          // User cancelled navigation, do nothing
+          console.log('Navigation cancelled by user');
+        }
+      });
+    }
+  }, []);
+
+  // Effect to update navigation warning service when call status changes
+  useEffect(() => {
+    navigationWarningService.setCallActive(isCalling);
+  }, [isCalling]);
+
+  // Effect to cleanup navigation warning service on unmount
+  useEffect(() => {
+    return () => {
+      // Cleanup navigation warning service when component unmounts
+      navigationWarningService.setCallActive(false);
+    };
+  }, []);
 
   // Debug wrapper for setChatData to track all calls
   const debugSetChatData = (value: any) => {

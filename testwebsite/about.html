@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Website - About</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+        }
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: white;
+        }
+        .nav-links {
+            display: flex;
+            gap: 20px;
+        }
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            transition: background-color 0.3s;
+        }
+        .nav-links a:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        .content {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 40px;
+            border-radius: 15px;
+            color: white;
+        }
+        .content h1 {
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .content p {
+            line-height: 1.8;
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+        }
+        .back-button {
+            background: #ff6b6b;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: background-color 0.3s;
+            margin-top: 30px;
+        }
+        .back-button:hover {
+            background: #ff5252;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <nav>
+                <div class="logo">TestWebsite</div>
+                <div class="nav-links">
+                    <a href="index.html">Home</a>
+                    <a href="about.html">About</a>
+                    <a href="contact.html">Contact</a>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content">
+            <h1>About Us</h1>
+            <p>This is the About page of our test website. We're using this site to demonstrate and test the chat widget navigation warning functionality.</p>
+            
+            <p>When you have an active call and try to navigate between pages on this non-SPA website, you should see a warning modal that asks if you want to open the new page in a new tab to keep your call active.</p>
+            
+            <p>This feature is particularly useful for websites that don't use client-side routing (SPAs), as navigating away from the page would normally end the call due to the API connection being terminated.</p>
+            
+            <p>The navigation warning system automatically detects whether a site is an SPA or not, and only shows warnings on non-SPA sites where navigation would actually end the call.</p>
+            
+            <a href="index.html" class="back-button">Back to Home</a>
+        </div>
+    </div>
+
+    <!-- Chat Widget -->
+    <script src="../dist/chat-widget.js"></script>
+    <script>
+        // Initialize the chat widget
+        if (window.ChatWidget) {
+            window.ChatWidget.init();
+        }
+    </script>
+</body>
+</html> 

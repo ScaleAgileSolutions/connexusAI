@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Widget iframe Integration Demo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .chat-widget-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        
+        .chat-iframe {
+            width: 300px;
+            height: 500px;
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            background: white;
+        }
+        
+        .demo-content {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .status-panel {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .status-item {
+            margin: 5px 0;
+            padding: 5px 10px;
+            background: #e9ecef;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-content">
+        <h1>Chat Widget iframe Integration Demo</h1>
+        <p>This page demonstrates the persistent chat widget embedded as an iframe.</p>
+        
+        <div class="status-panel">
+            <h3>Widget Status</h3>
+            <div id="status-container">
+                <div class="status-item">Status: <span id="widget-status">Loading...</span></div>
+                <div class="status-item">Last Message: <span id="last-message">None</span></div>
+                <div class="status-item">Call Active: <span id="call-active">No</span></div>
+            </div>
+        </div>
+        
+        <h3>Features Demonstrated:</h3>
+        <ul>
+            <li>✅ Persistent state across page refreshes</li>
+            <li>✅ Service Worker integration for offline functionality</li>
+            <li>✅ Cross-tab synchronization</li>
+            <li>✅ Call state persistence</li>
+            <li>✅ iframe embedding support</li>
+            <li>✅ Parent-child communication</li>
+        </ul>
+        
+        <h3>Test Instructions:</h3>
+        <ol>
+            <li>Click on the chat widget to start a conversation</li>
+            <li>Refresh this page - the widget state should persist</li>
+            <li>Open this page in multiple tabs - state should sync</li>
+            <li>Check browser console for detailed logs</li>
+        </ol>
+    </div>
+    
+    <!-- Chat Widget iframe -->
+    <!-- <div class="chat-widget-container">
+        <iframe 
+            id="chatWidget"
+            class="chat-iframe"
+            src="http://localhost:4000"
+            allow="microphone; camera; geolocation"
+            sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox"
+            title="Chat Widget">
+        </iframe>
+    </div> -->
+    
+    <script>
+        // Listen for messages from the iframe
+        window.addEventListener('message', function(event) {
+            if (event.origin !== 'http://localhost:4000') return;
+            
+            console.log('Received message from widget:', event.data);
+            
+            const statusElement = document.getElementById('widget-status');
+            const lastMessageElement = document.getElementById('last-message');
+            const callActiveElement = document.getElementById('call-active');
+            
+            if (event.data.type === 'WIDGET_READY') {
+                console.log('Widget is ready');
+                statusElement.textContent = 'Ready';
+                lastMessageElement.textContent = 'Widget Ready';
+            } else if (event.data.type === 'CALL_STARTED') {
+                console.log('Call started');
+                statusElement.textContent = 'Call Active';
+                callActiveElement.textContent = 'Yes';
+                lastMessageElement.textContent = `Call started with ${event.data.data?.agentName || 'Agent'}`;
+            } else if (event.data.type === 'CALL_ENDED') {
+                console.log('Call ended');
+                statusElement.textContent = 'Call Ended';
+                callActiveElement.textContent = 'No';
+                lastMessageElement.textContent = 'Call ended';
+            }
+        });
+        
+        // Send test message to iframe after load
+        window.addEventListener('load', function() {
+            setTimeout(() => {
+                const iframe = document.getElementById('chatWidget');
+                if (iframe && iframe.contentWindow) {
+                    iframe.contentWindow.postMessage({
+                        type: 'PARENT_READY',
+                        timestamp: Date.now()
+                    }, 'http://localhost:4000');
+                }
+            }, 2000);
+        });
+    </script>
+</body>
+</html> 
