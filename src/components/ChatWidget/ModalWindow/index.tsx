@@ -19,6 +19,7 @@ interface RegisterCallResponse {
 interface ModalWindowProps {
   visible: boolean;
   setVisible: (val: boolean) => void;
+  // microphoneStream?: MediaStream | null;
 }
 
 function ModalWindow(props: ModalWindowProps) {
@@ -52,8 +53,17 @@ function ModalWindow(props: ModalWindowProps) {
     customer_email: ""
   });
 
+  const getSharedMicrophoneStream = () => {
+    return (window as any).retellMicrophoneStream;
+  };
+
+
   // Initialize Retell client
   const retellWebClient = useRef(new RetellWebClient()).current;
+
+  useEffect(() => {
+    (window as any).retellWebClient = retellWebClient;
+  }, [retellWebClient]);
 
   // Hold music management functions
   const playHoldMusic = () => {
@@ -78,7 +88,7 @@ function ModalWindow(props: ModalWindowProps) {
   async function registerCall(agentId: string, context: any = {}): Promise<RegisterCallResponse | null> {
     try {
       // Generate tracking data for analytics
-     console.log("registering call",...context);
+    //  console.log("registering call",...context);
       setstartingCall(true);
       const trackingData: CallTrackingData = {
         sourceId: widgetConfig.sourceId,
@@ -157,7 +167,7 @@ function ModalWindow(props: ModalWindowProps) {
         }),
       });
       if (!response.ok) {
-        console.log(`Error: ${response.status}`);
+        // console.log(`Error: ${response.status}`);
         return null;
       }
 
@@ -220,6 +230,9 @@ function ModalWindow(props: ModalWindowProps) {
         accessToken: access_token,
         emitRawAudioSamples: true,
         sampleRate: 24000,
+        ...(getSharedMicrophoneStream() && {
+          captureDeviceId: getSharedMicrophoneStream().getAudioTracks()[0]?.getSettings().deviceId || 'default'
+      })
       });
 
       stopHoldMusic();
@@ -454,6 +467,9 @@ function ModalWindow(props: ModalWindowProps) {
               accessToken: res.access_token,
               emitRawAudioSamples: true,
               sampleRate: 24000,
+              ...(getSharedMicrophoneStream() && {
+                captureDeviceId: getSharedMicrophoneStream().getAudioTracks()[0]?.getSettings().deviceId || 'default'
+            })
             });
           } catch (callError) {
             console.error("Failed to start call:", callError);
@@ -531,7 +547,7 @@ function ModalWindow(props: ModalWindowProps) {
 
   // Monitor chatData changes
   useEffect(() => {
-    console.log("🔍 ChatData changed - Length:", chatData.length, "Data:", chatData);
+    // console.log("🔍 ChatData changed - Length:", chatData.length, "Data:", chatData);
   }, [chatData]);
 
   // Render the chat interface

@@ -3,7 +3,7 @@ function generateSourceIdFromURL(): string {
     return btoa(url); // Simple base64 encoding; swap for SHA if you want stronger obfuscation
   }
   
-  const scriptTag = document.currentScript as HTMLScriptElement | null;
+const scriptTag = document.currentScript as HTMLScriptElement | null;
 const origin = window.location.origin
 const allowedOrigins = [
   "http://americanhighschool.org",
@@ -14,9 +14,8 @@ const allowedOrigins = [
 ];
 
 
-  const widgetConfig = {
-    sourceId:
-    scriptTag?.getAttribute("data-source-id") || generateSourceIdFromURL(),
+const widgetConfig = {
+    sourceId:scriptTag?.getAttribute("data-source-id") || generateSourceIdFromURL(),
     agentId: scriptTag?.getAttribute("data-agent-id") || "agent_ea74c3c0c2b65da45e9035d281", 
     transferAgentId: scriptTag?.getAttribute("data-transfer-agent-id") || "agent_d9a52f59264b3fd6e0cb9bc812",
     agentName: scriptTag?.getAttribute("data-agent-name") || "Isabella",

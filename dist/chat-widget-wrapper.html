@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Chat Widget</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        background: transparent !important;
+        overflow: hidden !important;
+      }
+    </style>
+    <style>
+      iframe[src*="chat-widget-wrapper"] {
+          background: transparent !important;
+          background-color: transparent !important;
+      }
+      </style>
+    <script>
+      const urlParams = new URLSearchParams(window.location.search);
+
+
+      const tk = urlParams.get("tk") || "";
+
+
+      //change vocodia-maxoderm-multi-widget
+      const script = document.createElement("script");
+      script.src = "https://vocodia-maxoderm-multi-widget.pages.dev/chat-widget.js";
+      script.setAttribute("tk", tk);
+
+
+      script.onload = () => {
+        if (!window.__widget_initialized__) {
+          try {
+            initializeChatWidget();
+          } catch (e) {}
+          window.__widget_initialized__ = true;
+        }
+      };
+
+
+      document.head.appendChild(script);
+    </script>
+  </head>
+  <body>
+    <div id="widget-container"></div>
+  </body>
+</html>

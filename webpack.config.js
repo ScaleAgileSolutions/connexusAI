@@ -1,6 +1,7 @@
 // Import required dependencies
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 // Webpack configuration object
 module.exports = {
@@ -45,6 +46,22 @@ module.exports = {
     new HtmlWebpackPlugin({
       template: './public/index.html',  // HTML template for development
     }),
+    new CopyWebpackPlugin({
+      patterns: [
+        {
+          from: 'public/Jazz.mp3',
+          to: 'Jazz.mp3'
+        },
+        {
+          from: 'public/widget',
+          to: 'widget'
+        },
+        {
+          from: 'public/chat-widget-wrapper.html',
+          to: 'chat-widget-wrapper.html'
+        }
+      ]
+    }),
   ],
   
   // Development tools configuration
@@ -52,9 +69,15 @@ module.exports = {
   
   // Development server configuration
   devServer: {
-    static: {
-      directory: path.join(__dirname, 'dist'),  // Serve static files from dist directory
-    },
+    static: [
+      {
+        directory: path.join(__dirname, 'dist'),  // Serve static files from dist directory
+      },
+      {
+        directory: path.join(__dirname, 'public'),  // Serve static files from public directory
+        publicPath: '/',  // Serve public files at root path
+      }
+    ],
     headers: {
       'Access-Control-Allow-Origin': '*',  // Enable CORS for all origins
       'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',  // Allowed HTTP methods
