@@ -21,82 +21,78 @@
           background-color: transparent !important;
       }
       </style>
-   
-    <script>
-
+    <!-- <script>
       const urlParams = new URLSearchParams(window.location.search);
 
 
       const tk = urlParams.get("tk") || "";
-            let parentOrigin = "";
 
+
+      //change vocodia-maxoderm-multi-widget
+      const script = document.createElement("script");
+      script.src = "https://connexusaiwidget.pages.dev/chat-widget.js";
+      script.setAttribute("tk", tk);
+
+
+      script.onload = () => {
+        if (!window.__widget_initialized__) {
+          try {
+            initializeChatWidget();
+          } catch (e) {}
+          window.__widget_initialized__ = true;
+        }
+      };
+
+
+      document.head.appendChild(script);
+    </script> -->
+    <script>
+      // Parse tk from the URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const tk = urlParams.get("tk") || "";
+    
+      let parentOrigin = ""; // Will store the parent's origin once received
+    
+      // Ask the parent for its origin
+      window.parent.postMessage("REQUEST_PARENT_ORIGIN", "*");
+    
+      // Listen for the parent's response
       window.addEventListener("message", function (event) {
         if (event.data?.type === "PARENT_ORIGIN") {
           parentOrigin = event.data.origin;
-          console.log("Parent origin is:", parentOrigin);
-
-          // Load the widget only after we get the parent origin
+          console.log("✅ Parent origin is:", parentOrigin);
           loadChatWidget(tk, parentOrigin);
         }
       });
-
-      // fallback in case message is blocked or never arrives
+    
+      // Fallback in case message never arrives (e.g., blocked or unsupported)
       setTimeout(() => {
         if (!parentOrigin) {
+          console.warn("⚠️ No response from parent. Using fallback.");
           loadChatWidget(tk, "unknown");
         }
       }, 1000);
-
+    
+      // Load the actual widget script
       function loadChatWidget(tk, origin) {
         const script = document.createElement("script");
         script.src = "https://connexusaiwidget.pages.dev/chat-widget.js";
         script.setAttribute("tk", tk);
-        script.setAttribute("parent-origin", origin); // optional
-
+        script.setAttribute("parent-origin", origin); // optional, in case your widget script needs it
+    
         script.onload = () => {
           if (!window.__widget_initialized__) {
             try {
-              initializeChatWidget({ origin }); // pass origin to your widget if needed
+              initializeChatWidget({ origin }); // optional arg if your widget accepts origin
             } catch (e) {
-              console.warn("Chat widget failed to initialize:", e);
+              console.error("❌ Chat widget init failed:", e);
             }
             window.__widget_initialized__ = true;
           }
         };
-
+    
         document.head.appendChild(script);
       }
-
-  // // Ask the parent for its origin
-  //       window.parent.postMessage("REQUEST_PARENT_ORIGIN", "*");
-      
-  //       // Listen for the response
-  //       window.addEventListener("message", function (event) {
-  //         if (event.data?.type === "PARENT_ORIGIN") {
-  //           const parentOrigin = event.data.origin;
-  //           console.log("Parent origin is:", parentOrigin);
-      
-  //           // ✅ Now you can use parentOrigin
-  //         }
-  //       });
-
-  //     //change vocodia-maxoderm-multi-widget
-  //     const script = document.createElement("script");
-  //     script.src = "https://connexusaiwidget.pages.dev/chat-widget.js";
-  //     script.setAttribute("tk", tk);
-  //     script.setAttribute("parent-origin", origin); // optional
-
-  //     script.onload = () => {
-  //       if (!window.__widget_initialized__) {
-  //         try {
-  //           initializeChatWidget();
-  //         } catch (e) {}
-  //         window.__widget_initialized__ = true;
-  //       }
-  //     };
-
-
-  //     document.head.appendChild(script);
     </script>
   </head>
   <body>
