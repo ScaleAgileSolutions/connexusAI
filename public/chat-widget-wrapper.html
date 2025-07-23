@@ -21,30 +21,47 @@
           background-color: transparent !important;
       }
       </style>
+   
     <script>
-      const urlParams = new URLSearchParams(window.location.search);
 
+      let parentOrigin = "";
 
-      const tk = urlParams.get("tk") || "";
+      window.addEventListener("message", function (event) {
+        if (event.data?.type === "PARENT_ORIGIN") {
+          parentOrigin = event.data.origin;
+          console.log("Parent origin is:", parentOrigin);
 
-
-      //change vocodia-maxoderm-multi-widget
-      const script = document.createElement("script");
-      script.src = "https://connexusaiwidget.pages.dev/chat-widget.js";
-      script.setAttribute("tk", tk);
-
-
-      script.onload = () => {
-        if (!window.__widget_initialized__) {
-          try {
-            initializeChatWidget();
-          } catch (e) {}
-          window.__widget_initialized__ = true;
+          // Load the widget only after we get the parent origin
+          loadChatWidget(tk, parentOrigin);
         }
-      };
+      });
 
+      // fallback in case message is blocked or never arrives
+      setTimeout(() => {
+        if (!parentOrigin) {
+          loadChatWidget(tk, "unknown");
+        }
+      }, 1000);
 
-      document.head.appendChild(script);
+      function loadChatWidget(tk, origin) {
+        const script = document.createElement("script");
+        script.src = "https://connexusaiwidget.pages.dev/chat-widget.js";
+        script.setAttribute("tk", tk);
+        script.setAttribute("parent-origin", origin); // optional
+
+        script.onload = () => {
+          if (!window.__widget_initialized__) {
+            try {
+              initializeChatWidget({ origin }); // pass origin to your widget if needed
+            } catch (e) {
+              console.warn("Chat widget failed to initialize:", e);
+            }
+            window.__widget_initialized__ = true;
+          }
+        };
+
+        document.head.appendChild(script);
+      }
     </script>
   </head>
   <body>
