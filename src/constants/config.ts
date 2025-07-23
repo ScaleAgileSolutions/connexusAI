@@ -20,7 +20,7 @@ const fetchWidgetConfig = async () => {
     }
     // console.log(response,'response.data')
     let data = await response.json();
-    data.parentOrigin = parentOrigin;
+    data.data.parentOrigin = parentOrigin;
     return data;
   
   } catch (error) {
