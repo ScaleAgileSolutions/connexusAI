@@ -37,6 +37,8 @@ if (typeof window !== 'undefined') {
             
             // Listen for response from parent
             const handleParentMessage = (event: MessageEvent) => {
+                console.log('this is the parent origin', event);
+                console.log('this is the parent event.data', event.data);
                 if (event.data.type === 'PARENT_ORIGIN_RESPONSE') {
                     const parentOrigin = event.data.origin;
                     console.log('this is the parent origin', parentOrigin);
