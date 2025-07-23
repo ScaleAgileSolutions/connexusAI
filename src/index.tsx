@@ -26,91 +26,25 @@ export const initializeChatWidget = async () => {
     }
 };
 
-// console.log('Window loaded, initializing widget... First step');
-// if (typeof window !== 'undefined') {
-//     window.onload = async () => {
-//         console.log('Window loaded, initializing widget... Second step');
-//         try{
-//             await initializeWidgetConfig();
-//             let data = getWidgetConfig().domains.includes(window.location.origin)
-//             console.log('this is the window that origin',window.parent.location.origin )
-//             console.log(getWidgetConfig().domains,'this is the list of domains')
-//              console.log('this is data in the initializeWidgetConfig',data)
-//             if(data){
-//                 console.log('this is data in the second step',data)
-//                 await initializeChatWidget();
-//             }
-//         }catch(err){
-//             console.log('Please check your widget configuration')
-//         }
-//     };
-// } else {
-//     console.log('Not Initialized');
-// }
 console.log('Window loaded, initializing widget... First step');
-
 if (typeof window !== 'undefined') {
-    const initializeWidget = async () => {
+    window.onload = async () => {
+
         console.log('Window loaded, initializing widget... Second step');
-        try {
+        try{
             await initializeWidgetConfig();
-            
-            // Request parent origin via postMessage
-            window.parent.postMessage({ type: 'GET_PARENT_ORIGIN' }, "*");
-            
-            // Listen for response from parent with timeout
-            const handleParentMessage = (event) => {
-                console.log('Received message from parent:', event);
-                console.log('Event data:', event.data);
-                
-                if (event.data && event.data.type === 'PARENT_ORIGIN_RESPONSE') {
-                    const parentOrigin = event.data.origin;
-                    console.log('Parent origin:', parentOrigin);
-                    
-                    const widgetConfig = getWidgetConfig();
-                    if (!widgetConfig || !widgetConfig.domains) {
-                        console.error('Widget configuration is missing or invalid');
-                        return;
-                    }
-                    
-                    console.log('Configured domains:', widgetConfig.domains);
-                    
-                    const isAllowedDomain = widgetConfig.domains.includes(parentOrigin);
-                    console.log('Domain verification result:', isAllowedDomain);
-                    
-                    if (isAllowedDomain) {
-                        console.log('Domain verified, initializing chat widget');
-                        initializeChatWidget();
-                    } else {
-                        console.warn('Domain not allowed:', parentOrigin);
-                    }
-                    
-                    // Clean up event listener
-                    window.removeEventListener('message', handleParentMessage);
-                }
-            };
-            
-            window.addEventListener('message', handleParentMessage);
-            
-            // Optional: Add timeout to prevent hanging
-            setTimeout(() => {
-                window.removeEventListener('message', handleParentMessage);
-                console.warn('Parent origin request timed out');
-            }, 5000); // 5 second timeout
-            
-        } catch (err) {
-            console.error('Widget initialization failed:', err);
-            console.log('Please check your widget configuration');
+            let data = getWidgetConfig().domains.includes(window.location.origin)
+            console.log('this is the window parent origin',window.parent.location.origin )
+            console.log(getWidgetConfig().domains,'this is the list of domains')
+             console.log('this is data in the initializeWidgetConfig',data)
+            if(data){
+                console.log('this is data in the second step',data)
+                await initializeChatWidget();
+            }
+        }catch(err){
+            console.log('Please check your widget configuration')
         }
     };
-    
-    // Check if DOM is already loaded
-    if (document.readyState === 'loading') {
-        window.addEventListener('DOMContentLoaded', initializeWidget);
-    } else {
-        // DOM is already loaded
-        initializeWidget();
-    }
 } else {
-    console.log('Not in browser environment - widget not initialized');
+    console.log('Not Initialized');
 }
