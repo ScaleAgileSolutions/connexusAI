@@ -24,7 +24,11 @@
    
     <script>
 
-      let parentOrigin = "";
+      const urlParams = new URLSearchParams(window.location.search);
+
+
+      const tk = urlParams.get("tk") || "";
+            let parentOrigin = "";
 
       window.addEventListener("message", function (event) {
         if (event.data?.type === "PARENT_ORIGIN") {
@@ -62,6 +66,37 @@
 
         document.head.appendChild(script);
       }
+
+  // // Ask the parent for its origin
+  //       window.parent.postMessage("REQUEST_PARENT_ORIGIN", "*");
+      
+  //       // Listen for the response
+  //       window.addEventListener("message", function (event) {
+  //         if (event.data?.type === "PARENT_ORIGIN") {
+  //           const parentOrigin = event.data.origin;
+  //           console.log("Parent origin is:", parentOrigin);
+      
+  //           // ✅ Now you can use parentOrigin
+  //         }
+  //       });
+
+  //     //change vocodia-maxoderm-multi-widget
+  //     const script = document.createElement("script");
+  //     script.src = "https://connexusaiwidget.pages.dev/chat-widget.js";
+  //     script.setAttribute("tk", tk);
+  //     script.setAttribute("parent-origin", origin); // optional
+
+  //     script.onload = () => {
+  //       if (!window.__widget_initialized__) {
+  //         try {
+  //           initializeChatWidget();
+  //         } catch (e) {}
+  //         window.__widget_initialized__ = true;
+  //       }
+  //     };
+
+
+  //     document.head.appendChild(script);
     </script>
   </head>
   <body>
