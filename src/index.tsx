@@ -32,8 +32,10 @@ if (typeof window !== 'undefined') {
         console.log('Window loaded, initializing widget... Second step');
         try{
             await initializeWidgetConfig();
-            let data = getWidgetConfig().domains.includes(window.location.origin)
-            console.log('this is the window that origin',window.location.origin)
+            // Get the parent window's origin if we're in an iframe, otherwise use current origin
+            const currentOrigin = window.parent !== window ? window.parent.location.origin : window.location.origin;
+            let data = getWidgetConfig().domains.includes(currentOrigin)
+            console.log('this is the window that origin', currentOrigin)
             console.log(getWidgetConfig().domains,'this is the list of domains')
              console.log('this is data in the initializeWidgetConfig',data)
             if(data){
