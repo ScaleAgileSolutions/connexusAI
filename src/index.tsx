@@ -32,16 +32,30 @@ if (typeof window !== 'undefined') {
         console.log('Window loaded, initializing widget... Second step');
         try{
             await initializeWidgetConfig();
-            // Get the parent window's origin if we're in an iframe, otherwise use current origin
-            const currentOrigin = window.parent !== window ? window.parent.location.origin : window.location.origin;
-            let data = getWidgetConfig().domains.includes(currentOrigin)
-            console.log('this is the window that origin', currentOrigin)
-            console.log(getWidgetConfig().domains,'this is the list of domains')
-             console.log('this is data in the initializeWidgetConfig',data)
-            if(data){
-                console.log('this is data in the second step',data)
-                await initializeChatWidget();
-            }
+            // Request parent origin via postMessage
+            window.parent.postMessage({ type: 'GET_PARENT_ORIGIN' }, "*");
+            
+            // Listen for response from parent
+            const handleParentMessage = (event: MessageEvent) => {
+                if (event.data.type === 'PARENT_ORIGIN_RESPONSE') {
+                    const parentOrigin = event.data.origin;
+                    console.log('this is the parent origin', parentOrigin);
+                    
+                    let data = getWidgetConfig().domains.includes(parentOrigin);
+                    console.log(getWidgetConfig().domains,'this is the list of domains');
+                    console.log('this is data in the initializeWidgetConfig',data);
+                    
+                    if(data){
+                        console.log('this is data in the second step',data);
+                        initializeChatWidget();
+                    }
+                    
+                    // Clean up event listener
+                    window.removeEventListener('message', handleParentMessage);
+                }
+            };
+            
+            window.addEventListener('message', handleParentMessage);
         }catch(err){
             console.log('Please check your widget configuration')
         }
