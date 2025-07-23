@@ -28,7 +28,43 @@ export const initializeChatWidget = async () => {
 
 console.log('Window loaded, initializing widget... First step');
 if (typeof window !== 'undefined') {
+    try{
+    console.log('Window loaded, initializing widget... First step');
+    // Request the parent's origin
+    parent.postMessage({ type: 'request_origin' }, '*'); // Use '*' for initial handshake
+    
+    // Listen for the response
+    window.addEventListener('message', (event) => {
+      // Validate message source
+      if (event.source !== parent) return;
+    
+      // Process parent's response
+      if (event.data.type === 'send_origin') {
+        const parentOrigin = event.data.origin;
+        console.log('Received parent origin:', parentOrigin);
+      }
+    });
+}catch(err){
+    console.log('Please check your widget configuration for parent')
+}
+ 
     window.onload = async () => {
+
+        console.log('Window loaded, initializing widget... First step');
+        // Request the parent's origin
+        parent.postMessage({ type: 'request_origin' }, '*'); // Use '*' for initial handshake
+        
+        // Listen for the response
+        window.addEventListener('message', (event) => {
+          // Validate message source
+          if (event.source !== parent) return;
+        
+          // Process parent's response
+          if (event.data.type === 'send_origin') {
+            const parentOrigin = event.data.origin;
+            console.log('Received parent origin:', parentOrigin);
+          }
+        });
 
         console.log('Window loaded, initializing widget... Second step');
         try{
@@ -48,3 +84,4 @@ if (typeof window !== 'undefined') {
 } else {
     console.log('Not Initialized');
 }
+
