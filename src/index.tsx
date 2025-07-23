@@ -30,40 +30,32 @@ console.log('Window loaded, initializing widget... First step',window);
 if (typeof window !== 'undefined') {
     console.log(' First step under if',window);
  
-    window.onload = async () => {
+    const runWidgetInitialization = async () => {
         console.log('Window loaded, initializing widget... Second step');
         try{
             await initializeWidgetConfig();
-            // Request parent origin from the parent window
-            window.parent.postMessage("REQUEST_PARENT_ORIGIN", "*");
-
-            // Listen for a response from the parent window
-            const handleParentMessage = async (event: MessageEvent) => {
-                // Ensure the message is from the parent and has the expected structure
-                if (event.source === window.parent && event.data && event.data.type === 'PARENT_ORIGIN') {
-                    const parentOrigin = event.data.origin;
-                    console.log('Received parent origin:', parentOrigin);
-
-                    let data = getWidgetConfig().domains.includes(parentOrigin);
-                    console.log('this is the window parent origin from the widget', parentOrigin);
-                    console.log(getWidgetConfig().domains, 'this is the list of domains');
-                    console.log('this is data in the initializeWidgetConfig', data);
-
-                    if (data) {
-                        console.log('this is data in the second step', data);
-                        await initializeChatWidget();
-                    }
-
-                    // Clean up the event listener once we have the origin
-                    window.removeEventListener('message', handleParentMessage);
-                }
-            };
-
-            window.addEventListener('message', handleParentMessage);
+           let parentOrigin = getWidgetConfig().parentOrigin;
+           let data = getWidgetConfig().domains.includes(parentOrigin)
+           console.log('this is the window parent origin from the widget',parentOrigin )
+           console.log(getWidgetConfig().domains,'this is the list of domains')
+            console.log('this is data in the initializeWidgetConfig',data)
+            
+            if(data){
+               console.log('this is data in the second step',data)
+               await initializeChatWidget();
+            }
         }catch(err){
             console.log('Please check your widget configuration')
         }
     };
+
+    if (document.readyState === 'complete') {
+      // The page is already loaded, so run the initialization immediately.
+      runWidgetInitialization();
+    } else {
+      // The page is still loading, so wait for the 'load' event.
+      window.addEventListener('load', runWidgetInitialization);
+    }
 } else {
     console.log('Not Initialized');
 }
