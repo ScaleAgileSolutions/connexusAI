@@ -26,9 +26,9 @@ export const initializeChatWidget = async () => {
     }
 };
 
-console.log('Window loaded, initializing widget... First step');
+console.log('Window loaded, initializing widget... First step',window);
 if (typeof window !== 'undefined') {
-
+    console.log(' First step under if',window);
  
     window.onload = async () => {
 
