@@ -171,7 +171,7 @@ function ChatWidget() {
                 onClick={handleWidgetClick}
                 style={{
                     position: 'fixed',
-                    bottom: 32,
+                    bottom: 45,
                     right: 32,
                     width: 200,
                     height: 200,
