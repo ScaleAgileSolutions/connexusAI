@@ -28,7 +28,7 @@ export const initializeChatWidget = async () => {
 
 console.log('Window loaded, initializing widget... First step',window);
 if (typeof window !== 'undefined') {
-    console.log(' First step under if',window);
+    // console.log(' First step under if',window);
  
     const runWidgetInitialization = async () => {
         console.log('Window loaded, initializing widget... Second step');
@@ -36,14 +36,14 @@ if (typeof window !== 'undefined') {
             await initializeWidgetConfig();
            let parentOrigin = getWidgetConfig().parentOrigin;
            let data = getWidgetConfig().domains.includes(parentOrigin)
-           console.log('this is the window parent origin from the widget',parentOrigin )
-           console.log(getWidgetConfig().domains,'this is the list of domains')
-            console.log('this is data in the initializeWidgetConfig',data)
+        //    console.log('this is the window parent origin from the widget',parentOrigin )
+        //    console.log(getWidgetConfig().domains,'this is the list of domains')
+        //     console.log('this is data in the initializeWidgetConfig',data)
             
-            if(data){
-               console.log('this is data in the second step',data)
+            // if(data){
+            //    console.log('this is data in the second step',data)
                await initializeChatWidget();
-            }
+            // }
         }catch(err){
             console.log('Please check your widget configuration')
         }

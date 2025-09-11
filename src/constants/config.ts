@@ -48,7 +48,7 @@ export const getWidgetConfig = () => {
   if (!widgetConfig) {
     throw new Error('Widget configuration not initialized.');
   }
-  console.log('widgetConfig',widgetConfig)
+  // console.log('widgetConfig',widgetConfig)
   return widgetConfig.data;
 };
 export const Key = '1b07e2d1-c19f-44de-a638-303e755e1477'

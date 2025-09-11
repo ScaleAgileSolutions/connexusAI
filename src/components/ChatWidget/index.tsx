@@ -116,7 +116,7 @@ function ChatWidget() {
             (window as any).retellWebClient.mute();
             console.log('Microphone muted using Retell SDK');
         } else {
-            console.log('Retell web client not found');
+            console.log('not found');
         }
     };
 
@@ -164,7 +164,7 @@ function ChatWidget() {
     return (
         <div ref={widgetRef}>
             {/* Call Modal Window */}
-            <ModalWindow visible={visible} setVisible={setVisible} />
+            <ModalWindow visible={visible} setVisible={setVisible} setCallState={setCallState} />
 
             {/* Voice Assistant Prompt Widget - Based on image.json specs */}
             <div

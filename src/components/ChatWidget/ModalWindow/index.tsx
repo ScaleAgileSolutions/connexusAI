@@ -19,6 +19,7 @@ interface RegisterCallResponse {
 interface ModalWindowProps {
   visible: boolean;
   setVisible: (val: boolean) => void;
+  setCallState?: (state: 'inactive' | 'active' | 'muted') => void;
   // microphoneStream?: MediaStream | null;
 }
 
@@ -213,7 +214,7 @@ function ModalWindow(props: ModalWindowProps) {
     }
 
     try {
-      console.log("Starting transfer to agent:", newAgentId);
+      // console.log("Starting transfer to agent:", newAgentId);
       setTransferActive(true); // Set flag immediately to prevent duplicates
       
       await retellWebClient.stopCall();
@@ -259,12 +260,17 @@ function ModalWindow(props: ModalWindowProps) {
     console.log("Ending call and resetting...");
     await retellWebClient.stopCall();
     setIsCalling(false);
+      // props.setVisible(false);
     setTransferActive(false);
     console.log("🧹 endCallAndReset - clearing chatData");
     // debugSetChatData([]);
     setHasStartedInitialCall(false);
     // Update navigation warning service
     navigationWarningService.setCallActive(false);
+    // Reset call state in parent component
+    if (props.setCallState) {
+      props.setCallState('inactive');
+    }
     props.setVisible(false);
   };
 
@@ -284,7 +290,7 @@ function ModalWindow(props: ModalWindowProps) {
   const handleUpdate = async (update: any) => {
     let postData = []
     handleUpdateCounter.current++;
-    console.log(`🔥 handleUpdate called #${handleUpdateCounter.current} with:`, update);
+    // console.log(`🔥 handleUpdate called #${handleUpdateCounter.current} with:`, update);
     
     const last = update.transcript?.[update.transcript.length - 1];
     if (!last) {
@@ -295,30 +301,30 @@ function ModalWindow(props: ModalWindowProps) {
     const newContent = last.content || "";
     const role = last.role;
     
-    console.log("📝 Processing message - Role:", role, "Content:", newContent);
-    console.log("📊 Current chatData before update:", chatData);
-    console.log("📊 ChatData length:", chatData.length);
-    console.log("📊 postData transcript:⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️", update.transcript);
+    // console.log("📝 Processing message - Role:", role, "Content:", newContent);
+    // console.log("📊 Current chatData before update:", chatData);
+    // console.log("📊 ChatData length:", chatData.length);
+    // console.log("📊 postData transcript:⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️", update.transcript);
 
     debugSetChatData(prev => {
-      console.log("🔄 setChatData called - Previous data:", prev);
+      // console.log("🔄 setChatData called - Previous data:", prev);
       
       const lastMessage = prev[prev.length - 1];
       
       // If the last message is from the same role, UPDATE it instead of adding new
       if (lastMessage?.role === role) {
-        console.log("🔄 Updating existing message content");
+        // console.log("🔄 Updating existing message content");
         const updatedMessage = { ...lastMessage, content: newContent };
         const newData = [...prev.slice(0, -1), updatedMessage];
-        console.log("🔄 Updated data:", newData);
+        // console.log("🔄 Updated data:", newData);
        
         return newData;
       }
       
       // If different role or first message, ADD new message
-      console.log("🔄 Adding new message");
+      // console.log("🔄 Adding new message");
       const newData = [...prev, { role, content: newContent }];
-      console.log("🔄 New data:", newData);
+      // console.log("🔄 New data:", newData);
       return newData;
     }); 
    
@@ -338,7 +344,7 @@ function ModalWindow(props: ModalWindowProps) {
      // Handle user data collection based on agent questions
      if (role === "user" && newContent) {
       if (agentLastQuestion.current.includes("your name")) {
-        console.log("agentLastQuestion.current!!!!!!!!!!!!!!!!!!! Name",agentLastQuestion.current);
+        // console.log("agentLastQuestion.current!!!!!!!!!!!!!!!!!!! Name",agentLastQuestion.current);
         const nameParts = newContent.trim().split(" ");
         if (nameParts.length >= 2) {
           userData.current.first_name = nameParts[0];
@@ -367,11 +373,11 @@ function ModalWindow(props: ModalWindowProps) {
     const shouldTransfer = shouldTriggerTransfer(newContent, transferExamples);
     if (role === "agent" && shouldTransfer && !transferTriggeredRef.current) {
 
-    console.log("chatData before transfer!!!!!!!!!!!!!!!!!!!",chatData);
+    // console.log("chatData before transfer!!!!!!!!!!!!!!!!!!!",chatData);
       transferTriggeredRef.current = true;
       const summary = update.transcript.map(msg => `${msg.role}: ${msg.content}`).join("\n");
       await wait(3000);
-      console.log("transferring to agent!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!",summary);
+      // console.log("transferring to agent!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!",summary);
       (window as any).transferToAgent?.(widgetConfig.transferAgentName);
       
       await transferCall(widgetConfig.transferAgentId, {
@@ -412,10 +418,18 @@ function ModalWindow(props: ModalWindowProps) {
       navigationWarningService.setCallActive(true);
     };
     const handleCallEnded = (data) => {
-      console.log("📞 Call ended event received", data);
+      // alert('call end')
+      // console.log("📞 Call ended event received", data);
       setIsCalling(false);
+      setTransferActive(false);
+      setHasStartedInitialCall(false);
+      setstartingCall(false);
       // Update navigation warning service
       navigationWarningService.setCallActive(false);
+      // Reset call state in parent component
+      if (props.setCallState) {
+        props.setCallState('inactive');
+      }
       props.setVisible(false);
     };
     const handleError = (err) => {
@@ -428,7 +442,7 @@ function ModalWindow(props: ModalWindowProps) {
     client.on("update", handleUpdate);
     client.on("error", handleError);
     
-    console.log("✅ Event listeners attached successfully");
+    // console.log("✅ Event listeners attached successfully");
 
     return () => {
       console.log("🧹 Cleaning up event listeners");
