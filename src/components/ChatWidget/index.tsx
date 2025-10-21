@@ -227,7 +227,7 @@ function ChatWidget() {
                     cursor: 'pointer',
                     zIndex: 1000,
                     overflow: 'visible',
-                    padding: '8px 14px',
+                    padding: '7px 13px',
                     border: 'none',
                     transition: 'all 0.3s ease',
                 }}
@@ -303,14 +303,14 @@ function ChatWidget() {
 
                 {/* Logo/Icon - Changes based on state */}
                 <div style={{
-                    width: 48,
-                    height: 48,
+                    width: 43,
+                    height: 43,
                     borderRadius: '50%',
                     background: callState === 'muted' ? 'transparent' : callState === 'active' ? '#2D7F4F' : 'white',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    marginRight: 10,
+                    marginRight: 9,
                     flexShrink: 0,
                     boxShadow: callState === 'muted' ? 'none' : '0 2px 8px rgba(0, 0, 0, 0.1)',
                 }}>
@@ -319,15 +319,15 @@ function ChatWidget() {
                             src="/look/Icon_Mic02.png"
                             alt="Muted"
                             style={{
-                                width: 48,
-                                height: 48,
+                                width: 43,
+                                height: 43,
                                 objectFit: 'contain',
                             }}
                         />
                     ) : callState === 'active' ? (
                         <svg 
-                            width="24" 
-                            height="24" 
+                            width="22" 
+                            height="22" 
                             viewBox="0 0 24 24" 
                             fill="white"
                         >
@@ -338,8 +338,8 @@ function ChatWidget() {
                             src="/look/Logo_01.png"
                             alt="ConnexUS AI Logo"
                             style={{
-                                width: 36,
-                                height: 36,
+                                width: 32,
+                                height: 32,
                                 objectFit: 'contain',
                             }}
                         />
@@ -351,11 +351,11 @@ function ChatWidget() {
                     display: 'flex',
                     flexDirection: 'column',
                     justifyContent: 'center',
-                    paddingRight: 8,
+                    paddingRight: 7,
                 }}>
                     <div style={{
                         color: callState === 'muted' ? '#C92A2A' : callState === 'active' ? '#2D7F4F' : '#001F54',
-                        fontSize: '14px',
+                        fontSize: '13px',
                         fontWeight: '700',
                         fontFamily: 'system-ui, -apple-system, sans-serif',
                         lineHeight: 1.2,
@@ -365,7 +365,7 @@ function ChatWidget() {
                     </div>
                     <div style={{
                         color: '#4A5568',
-                        fontSize: '10px',
+                        fontSize: '9px',
                         fontWeight: '400',
                         fontFamily: 'system-ui, -apple-system, sans-serif',
                         lineHeight: 1.3,
