@@ -148,7 +148,7 @@ function ModalWindow(props: ModalWindowProps) {
         }
       };
       // Make API call to create web call
-     
+      console.log("registering call",getWidgetConfig(),'this is the widget config');
       const response = await fetch("https://api.retellai.com/v2/create-web-call", {
         method: "POST",
         headers: {
@@ -267,9 +267,9 @@ function ModalWindow(props: ModalWindowProps) {
     setHasStartedInitialCall(false);
     // Update navigation warning service
     navigationWarningService.setCallActive(false);
-    // Reset call state in parent component
+    // Set call state to muted to show red "You're OFF" state
     if (props.setCallState) {
-      props.setCallState('inactive');
+      props.setCallState('muted');
     }
     props.setVisible(false);
   };
@@ -426,9 +426,9 @@ function ModalWindow(props: ModalWindowProps) {
       setstartingCall(false);
       // Update navigation warning service
       navigationWarningService.setCallActive(false);
-      // Reset call state in parent component
+      // Set call state to muted to show red "You're OFF" state
       if (props.setCallState) {
-        props.setCallState('inactive');
+        props.setCallState('muted');
       }
       props.setVisible(false);
     };
@@ -509,7 +509,8 @@ function ModalWindow(props: ModalWindowProps) {
           console.error("Call registration failed:", err);
           setCallLimitError('Failed to update call count. Please try again.');
         }
-      } else if (!props.visible && isTransferActive === false) {
+      } else if (!props.visible && hasStartedInitialCall) {
+        // Only clean up if we previously had a call started
         console.log("Widget closed - cleaning up call");
         endCallAndReset();
       }

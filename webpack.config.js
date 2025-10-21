@@ -57,6 +57,10 @@ module.exports = {
           to: 'widget'
         },
         {
+          from: 'public/look',
+          to: 'look'
+        },
+        {
           from: 'public/chat-widget-wrapper.html',
           to: 'chat-widget-wrapper.html'
         }

@@ -27,6 +27,7 @@ function ChatWidget() {
     const [currentStage, setCurrentStage] = useState('Speak With');
     const [callState, setCallState] = useState<'inactive' | 'active' | 'muted'>('inactive');
     const [micStream, setMicStream] = useState<MediaStream | null>(null);
+    const [isClosed, setIsClosed] = useState(false);
 
     // use effect listener to check if the mouse was cliked outside the window 
     useEffect(() => {
@@ -151,12 +152,13 @@ function ChatWidget() {
             checkMic();
             setCallState('active');
         } else if (callState === 'active') {
-            // Mute call
-            muteMicrophone();
+            // Mute call (but this will end the call instead)
+            setVisible(false);
+            stopMicrophone();
             setCallState('muted');
         } else if (callState === 'muted') {
-            // Unmute call
-            unmuteMicrophone();
+            // Unmute call (start new call)
+            checkMic();
             setCallState('active');
         }
     };
@@ -166,50 +168,87 @@ function ChatWidget() {
             {/* Call Modal Window */}
             <ModalWindow visible={visible} setVisible={setVisible} setCallState={setCallState} />
 
-            {/* Voice Assistant Prompt Widget - Based on image.json specs */}
-            <div
-                onClick={handleWidgetClick}
+            {/* Show only icon when closed, full widget when open */}
+            {isClosed ? (
+                /* Closed state - show only main.png icon */
+                <div
+                    onClick={() => {
+                        setIsClosed(false);
+                        setCallState('inactive');
+                    }}
+                    style={{
+                        position: 'fixed',
+                        bottom: 32,
+                        right: 32,
+                        width: 64,
+                        height: 64,
+                        cursor: 'pointer',
+                        zIndex: 1000,
+                        transition: 'transform 0.2s ease',
+                    }}
+                    onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = 'scale(1.1)';
+                    }}
+                    onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = 'scale(1)';
+                    }}
+                >
+                    <img
+                        src="/look/main.png"
+                        alt="Open Widget"
+                        style={{
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'contain',
+                        }}
+                    />
+                </div>
+            ) : (
+                /* Full widget state */
+                <div
+                    onClick={handleWidgetClick}
                 style={{
                     position: 'fixed',
-                    bottom: 45,
+                    bottom: 32,
                     right: 32,
-                    width: 200,
-                    height: 200,
-                    borderRadius: '50%',
-                    background: callState === 'muted' ? '#EC221F' : 'white',
+                    width: 'auto',
+                    height: 'auto',
+                    borderRadius: '40px',
+                    background: 'linear-gradient(135deg, #D4E3F0 0%, #E8EFF5 50%, #FFFFFF 100%)',
                     boxShadow: callState === 'active' 
-                        ? '0 8px 32px rgba(0,0,0,0.25), 0 0 0 4px rgba(20, 174, 92, 0.3)' 
+                        ? '0 0 0 3px rgba(49, 225, 123, 0.3), 0 6px 24px rgba(49, 225, 123, 0.4)' 
                         : callState === 'muted'
-                        ? '0 8px 32px rgba(0,0,0,0.25), 0 0 0 4px rgba(236, 34, 31, 0.3)'
-                        : '0 8px 32px rgba(0,0,0,0.25)',
+                        ? '0 0 0 3px rgba(236, 34, 31, 0.3), 0 6px 24px rgba(236, 34, 31, 0.4)'
+                        : '0 6px 24px rgba(0, 0, 0, 0.15)',
                     display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'flex-start',
-                    justifyContent: 'center',
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'flex-start',
                     cursor: 'pointer',
                     zIndex: 1000,
                     overflow: 'visible',
-                    padding: '24px',
-                    border: callState === 'active' ? '3px solid #14AE5C' : callState === 'muted' ? '3px solid #EC221F' : 'none',
-                    animation: callState === 'active' ? 'pulse-green 2s infinite' : callState === 'muted' ? 'pulse-red 2s infinite' : 'none',
+                    padding: '8px 14px',
+                    border: 'none',
+                    transition: 'all 0.3s ease',
                 }}
                 onMouseEnter={() => setHovered(true)}
                 onMouseLeave={() => setHovered(false)}
             >
-                {/* Close Button - Top right, outside the circle */}
+                {/* Close Button - Show in all states */}
                 <button
                     onClick={(e) => {
                         e.stopPropagation();
                         setVisible(false);
                         setCallState('inactive');
                         stopMicrophone();
+                        setIsClosed(true);
                     }}
                     style={{
                         position: 'absolute',
-                        top: -10,
-                        right: -10,
-                        width: 30,
-                        height: 30,
+                        top: -35,
+                        right: -5,
+                        width: 40,
+                        height: 40,
                         background: 'none',
                         border: 'none',
                         cursor: 'pointer',
@@ -218,16 +257,22 @@ function ChatWidget() {
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
+                        transition: 'transform 0.2s ease',
                     }}
                     aria-label="Close"
+                    onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = 'scale(1.1)';
+                    }}
+                    onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = 'scale(1)';
+                    }}
                 >
                     <img
-                        src="/widget/Icon_Close.svg"
+                        src="/look/Icon_Close.svg"
                         alt="Close"
                         style={{
-                            width: 18,
-                            height: 18,
-                            color: '#000000',
+                            width: 24,
+                            height: 24,
                         }}
                     />
                 </button>
@@ -256,188 +301,81 @@ function ChatWidget() {
                     {callState === 'inactive' ? 'Start Call' : callState === 'active' ? 'Mute' : 'Unmute'}
                 </button> */}
 
-                {/* Blue horizontal line accent or Audio Wave when call is active */}
-                {callState === 'active' || callState === 'muted' ? (
-                    <img
-                        src="/widget/Audio Wave.gif"
-                        alt="Audio Wave"
-                        style={{
-                            position: 'absolute',
-                            left: 28,
-                            top: 45,
-                            width: 100,
-                            height: 12,
-                            objectFit: 'cover',
-                        }}
-                    />
-                ) : (
-                    <div style={{
-                        position: 'absolute',
-                        left: 28,
-                        top: 50,
-                        width: 100,
-                        height: 2,
-                        background: '#000080', // primaryColor from specs
-                        borderRadius: 1,
-                    }} />
-                )}
-
-                {/* Text content - matching image.json textStyles */}
+                {/* Logo/Icon - Changes based on state */}
                 <div style={{
-                    position: 'absolute',
-                    left: 28,
-                    top: 60,
-                    width: 130,
+                    width: 48,
+                    height: 48,
+                    borderRadius: '50%',
+                    background: callState === 'muted' ? 'transparent' : callState === 'active' ? '#2D7F4F' : 'white',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    marginRight: 10,
+                    flexShrink: 0,
+                    boxShadow: callState === 'muted' ? 'none' : '0 2px 8px rgba(0, 0, 0, 0.1)',
                 }}>
-                    {/* Title: "Need more info?" */}
+                    {callState === 'muted' ? (
+                        <img
+                            src="/look/Icon_Mic02.png"
+                            alt="Muted"
+                            style={{
+                                width: 48,
+                                height: 48,
+                                objectFit: 'contain',
+                            }}
+                        />
+                    ) : callState === 'active' ? (
+                        <svg 
+                            width="24" 
+                            height="24" 
+                            viewBox="0 0 24 24" 
+                            fill="white"
+                        >
+                            <path d="M20.01 15.38c-1.23 0-2.42-.2-3.53-.56a.977.977 0 00-1.01.24l-1.57 1.97c-2.83-1.35-5.48-3.9-6.89-6.83l1.95-1.66c.27-.28.35-.67.24-1.02-.37-1.11-.56-2.3-.56-3.53 0-.54-.45-.99-.99-.99H4.19C3.65 3 3 3.24 3 3.99 3 13.28 10.73 21 20.01 21c.71 0 .99-.63.99-1.18v-3.45c0-.54-.45-.99-.99-.99z"/>
+                        </svg>
+                    ) : (
+                        <img
+                            src="/look/Logo_01.png"
+                            alt="ConnexUS AI Logo"
+                            style={{
+                                width: 36,
+                                height: 36,
+                                objectFit: 'contain',
+                            }}
+                        />
+                    )}
+                </div>
+
+                {/* Text content - Same structure, colors change based on state */}
+                <div style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    paddingRight: 8,
+                }}>
                     <div style={{
-                        position: 'absolute',
-                        top: 9,
-                        left: -20,
-                        color: callState === 'muted' ? 'white' : '#000090', // title color from specs
-                        fontWeight: 'normal', // normal weight from specs
-                        fontSize: '12px', // medium size
-                        marginBottom: 6,
-                        fontFamily: 'inherit',
+                        color: callState === 'muted' ? '#C92A2A' : callState === 'active' ? '#2D7F4F' : '#001F54',
+                        fontSize: '14px',
+                        fontWeight: '700',
+                        fontFamily: 'system-ui, -apple-system, sans-serif',
                         lineHeight: 1.2,
+                        marginBottom: 2,
                     }}>
-                        {callState === 'muted' ? 'Microphone muted' : callState === 'active' ? 'Call active' : 'Need more info?'}
+                        {callState === 'muted' ? `You're OFF with ${currentAgentName}` : callState === 'active' ? `You're ON with ${currentAgentName}` : `Speak with ${currentAgentName} for Help`}
                     </div>
-                    {/* Subtitle: "Speak with Carolyn now" */}
                     <div style={{
-                        position: 'absolute',
-                        left: -20,
-                        top: 30,
-                        color: callState === 'muted' ? 'white' : '#000080', // subtitle color from specs (primaryColor)
-                        fontWeight: 'bold', // bold from specs
-                        fontSize: '14px', // medium size, slightly larger
-                        fontStyle: 'italic', // italic from specs
-                        fontFamily: 'inherit',
-                        lineHeight: 1.1,
+                        color: '#4A5568',
+                        fontSize: '10px',
+                        fontWeight: '400',
+                        fontFamily: 'system-ui, -apple-system, sans-serif',
+                        lineHeight: 1.3,
                     }}>
-                        {callState === 'muted' ? 'Click to unmute' : callState === 'active' ? 'Click to mute' : 'Speak with'}<br />{callState === 'muted' || callState === 'active' ? '' : currentAgentName}
+                        Powered by ConnexUS AI
                     </div>
                 </div>
 
-                {/* Agent Image - Business casual female with headset, positioned right inside circle */}
-                <img
-                    src="/widget/agent.png"
-                    alt="Voice Assistant"
-                    style={{
-                        position: 'absolute',
-                        right: 0,
-                        top: 20,
-                        width: 200,
-                        height: 180,
-                        objectFit: 'cover',
-                        borderRadius: 16,
-                        // boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                        zIndex: 2,
-                    }}
-                />
-
-                {/* Microphone Button - Orange, Green, or Red based on call state */}
-                {callState === 'active' ? (
-                    <img
-                        src="/widget/Icon_MicrophoneGreen.svg"
-                        alt="Active Microphone"
-                        style={{
-                            position: 'absolute',
-                            left: '50%',
-                            bottom: -55,
-                            transform: 'translateX(-50%)',
-                            width: 111,
-                            height: 111,
-                            cursor: 'pointer',
-                            zIndex: 3,
-                            transition: 'transform 0.2s ease',
-                        }}
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            muteMicrophone();
-                            setCallState('muted');
-                        }}
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.transform = 'translateX(-50%) scale(1.05)';
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.transform = 'translateX(-50%) scale(1)';
-                        }}
-                    />
-                ) : callState === 'muted' ? (
-                    <img
-                        src="/widget/Icon_MicrophoneRed.svg"
-                        alt="Muted Microphone"
-                        style={{
-                            position: 'absolute',
-                            left: '50%',
-                            bottom: -55,
-                            transform: 'translateX(-50%)',
-                            width: 111,
-                            height: 111,
-                            cursor: 'pointer',
-                            zIndex: 3,
-                            transition: 'transform 0.2s ease',
-                        }}
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            unmuteMicrophone();
-                            setCallState('active');
-                        }}
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.transform = 'translateX(-50%) scale(1.05)';
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.transform = 'translateX(-50%) scale(1)';
-                        }}
-                    />
-                ) : (
-                    <div
-                        style={{
-                            position: 'absolute',
-                            left: '50%',
-                            bottom: -40,
-                            transform: 'translateX(-50%)',
-                            width: 85,
-                            height: 85,
-                            borderRadius: '50%',
-                            background: '#FF6600', // accentColor from specs
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            boxShadow: '0 6px 20px rgba(255,102,0,0.3)',
-                            zIndex: 3,
-                            cursor: 'pointer',
-                            transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-                        }}
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            setCallState('active');
-                            setVisible(true);
-                        }}
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.transform = 'translateX(-50%) scale(1.05)';
-                            e.currentTarget.style.boxShadow = '0 8px 24px rgba(255,102,0,0.4)';
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.transform = 'translateX(-50%) scale(1)';
-                            e.currentTarget.style.boxShadow = '0 6px 20px rgba(255,102,0,0.3)';
-                        }}
-                    >
-                        {/* Microphone icon - white on orange background */}
-                        <svg 
-                            width="48" 
-                            height="48" 
-                            viewBox="0 0 24 24" 
-                            fill="white"
-                            style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.1))' }}
-                        >
-                            <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
-                            <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
-                        </svg>
-                    </div>
-                )}
             </div>
+            )}
         </div>
     );
 }
